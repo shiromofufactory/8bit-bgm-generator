@@ -1,0 +1,146 @@
+[
+  {
+    "name": "pure triangle",
+    "wave": "T",
+    "attack": 0,
+    "decay": 0,
+    "sustain": 100,
+    "release": 0,
+    "vibrato": 0
+  },
+  {
+    "name": "normal lead",
+    "wave": "P",
+    "attack": 0,
+    "decay": 30,
+    "sustain": 50,
+    "release": 10,
+    "vibrato": 60
+  },
+  {
+    "name": "soft lead",
+    "wave": "P",
+    "attack": 20,
+    "decay": 20,
+    "sustain": 70,
+    "release": 10,
+    "vibrato": 60
+  },
+  {
+    "name": "strings",
+    "wave": "P",
+    "attack": 40,
+    "decay": 0,
+    "sustain": 100,
+    "release": 20,
+    "vibrato": 90
+  },
+  {
+    "name": "flute",
+    "wave": "S",
+    "attack": 15,
+    "decay": 60,
+    "sustain": 50,
+    "release": 10,
+    "vibrato": 90
+  },
+  {
+    "name": "e_piano",
+    "wave": "S",
+    "attack": 0,
+    "decay": 30,
+    "sustain": 30,
+    "release": 10,
+    "vibrato": 0
+  },
+  {
+    "name": "harp",
+    "wave": "S",
+    "attack": 0,
+    "decay": 15,
+    "sustain": 10,
+    "release": 20,
+    "vibrato": 0
+  },
+  {
+    "name": "base",
+    "wave": "T",
+    "attack": 0,
+    "decay": 0,
+    "sustain": 100,
+    "release": 0,
+    "vibrato": 60
+  },
+  {
+    "name": "harpsicord",
+    "wave": "P",
+    "attack": 0,
+    "decay": 40,
+    "sustain": 20,
+    "release": 10,
+    "vibrato": 0
+  },
+  {
+    "name": "ocarina",
+    "wave": "T",
+    "attack": 15,
+    "decay": 60,
+    "sustain": 60,
+    "release": 10,
+    "vibrato": 0
+  },
+  {
+    "name": "square lead",
+    "wave": "S",
+    "attack": 0,
+    "decay": 60,
+    "sustain": 80,
+    "release": 10,
+    "vibrato": 0
+  },
+  {
+    "name": "thick lead",
+    "wave": "P",
+    "attack": 0,
+    "decay": 60,
+    "sustain": 80,
+    "release": 10,
+    "vibrato": 0
+  },
+  {
+    "name": "no data",
+    "wave": "T",
+    "attack": 0,
+    "decay": 0,
+    "sustain": 0,
+    "release": 0,
+    "vibrato": 0
+  },
+  {
+    "name": "no data",
+    "wave": "T",
+    "attack": 0,
+    "decay": 0,
+    "sustain": 0,
+    "release": 0,
+    "vibrato": 0
+  },
+  {
+    "name": "no data",
+    "wave": "T",
+    "attack": 0,
+    "decay": 0,
+    "sustain": 0,
+    "release": 0,
+    "vibrato": 0
+  },
+  {
+    "name": "noise drums",
+    "wave": "N",
+    "attack": 0,
+    "decay": 12,
+    "sustain": 0,
+    "release": 0,
+    "vibrato": 0
+  }
+]

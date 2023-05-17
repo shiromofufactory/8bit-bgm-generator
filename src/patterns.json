@@ -1,0 +1,62 @@
+[
+  {
+    "key": ":1",
+    "abbr": "BD",
+    "name": "Bass Drum",
+    "wave": "N",
+    "notes": [36, 24],
+    "decay": 8,
+    "sustain": 0,
+    "velocity": 100
+  },
+  {
+    "key": ":2",
+    "abbr": "SD",
+    "name": "Snare Drum",
+    "wave": "N",
+    "notes": [46],
+    "decay": 16,
+    "sustain": 0,
+    "velocity": 100
+  },
+  {
+    "key": ":3",
+    "abbr": "HH",
+    "name": "HiHat",
+    "wave": "N",
+    "notes": [58],
+    "decay": 10,
+    "sustain": 0,
+    "velocity": 30
+  },
+  {
+    "key": ":5",
+    "abbr": "LT",
+    "name": "Low Tam",
+    "wave": "T",
+    "notes": [21, 19, 18, 17, 16, 15, 14, 13, 12],
+    "sustain": 0,
+    "decay": 16,
+    "velocity": 100
+  },
+  {
+    "key": ":6",
+    "abbr": "MT",
+    "name": "Middle Tam",
+    "wave": "T",
+    "notes": [27, 25, 24, 23, 22, 21, 20, 19, 18],
+    "sustain": 0,
+    "decay": 16,
+    "velocity": 100
+  },
+  {
+    "key": ":7",
+    "abbr": "HT",
+    "name": "Hi Tam",
+    "wave": "T",
+    "notes": [33, 31, 30, 29, 28, 27, 26, 25, 24],
+    "sustain": 0,
+    "decay": 16,
+    "velocity": 100
+  }
+]
