@@ -782,7 +782,7 @@ class App:
             note = notes[idx][0]
             if self.prev_note >= 0:
                 diff = abs(self.prev_note - note)
-                if diff > 7 and diff != 12:
+                if diff > 9 and diff != 12:
                     continue
             return idx
 
