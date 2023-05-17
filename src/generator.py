@@ -334,6 +334,9 @@ class App:
                     with open(f"../music.json", "wt") as fout:
                         fout.write(json.dumps(self.music))
                     print(self.music)
+                    print(
+                        "Sample program to play a song: https://github.com/shiromofufactory/8bit-bgm-generator/blob/master/play.py"
+                    )
                     self.show_export = True
         for button in self.buttons:
             if button.visible(self) and button.mouse_in():
