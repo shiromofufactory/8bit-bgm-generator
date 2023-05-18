@@ -18,7 +18,7 @@ Pyxelをお持ちの方でなくても、ブラウザ版で体験いただくこ
 
 ## ツールの使い方
 
-- ブラウザ上で動かす場合： https://retro-bgm-generator.web.app/　（スマートフォンでも動きますが、画面が小さく操作しづらいのと、エクスポートが困難なので、お試し用途以外はPCからアクセスください。）
+- ブラウザ上で動かす場合： https://retro-bgm-generator.web.app/ （スマートフォンでも動きますが、画面が小さく操作しづらいのと、エクスポートが困難なので、お試し用途以外はPCからアクセスください。）
 - ローカル環境で動かす場合： このリポジトリをダウンロードして、src/generator.py を起動してください。
 
 ## 自動生成した曲を使うには？
@@ -33,7 +33,7 @@ Pyxelのサウンド仕様に沿ったテキストデータをjsonファイル�
 
 ### ②Pyxel以外で使いたい場合
 
-現時点（ver 1.00）ではサポートが不十分ですが、たとえばChromeの拡張機能[「Chrome audio capture」](https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp) などを使うことで、ブラウザ上で鳴らしているシステムサウンドをmp3ファイルなどに録音することができます。
+現時点（ver 1.00）ではサポートが不十分ですが、たとえばChromeの拡張機能[「Chrome Audio Capture」](https://chrome.google.com/webstore/detail/chrome-audio-capture/kfokdmfpdnokpmpbjhjbcabgligoelgp) などを使うことで、ブラウザ上で鳴らしているシステムサウンドをmp3ファイルなどに録音することができます。（実際にゲームなどで使う場合は、無音部分のトリム編集などが必要になってきます。）
 
 こういった方法で作成した音声ファイルも自由に使っていただいて問題ありません。
 
