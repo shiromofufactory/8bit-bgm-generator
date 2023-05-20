@@ -500,7 +500,7 @@ class App:
             ("トランスポーズ", "Transpose"),
             ("", ""),
             ("テンポ", "Tempo"),
-            ("コードしんこう", "Chord progression"),
+            ("コードしんこう", "Chord Progression"),
             ("ベース　パターン", "Bass Patterns"),
             ("ベース　クオンタイズ", "Base Quantize"),
             ("ドラム　パターン", "Drums Patterns"),
