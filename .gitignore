@@ -1,6 +1,7 @@
 __pycache__
 .git
 dev
+src/music.json
 *.sh
 firebase.json
 .firebaserc

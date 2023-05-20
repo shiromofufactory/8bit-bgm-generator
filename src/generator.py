@@ -1,4 +1,5 @@
 import pyxel as px
+import os
 import json
 import sounds
 
@@ -230,6 +231,7 @@ class Button(Element):
 # アプリ
 class App:
     def __init__(self):
+        self.output_file = os.path.abspath("music.json")
         px.init(256, 256, title="8bit BGM generator", quit_key=px.KEY_NONE)
         px.load("assets.pyxres")
         self.bdf = BDFRenderer("misaki_gothic.bdf")
@@ -331,7 +333,7 @@ class App:
                     if px.play_pos(0):
                         self.play()
                 elif icon.id == 3:
-                    with open(f"../music.json", "wt") as fout:
+                    with open(self.output_file, "wt") as fout:
                         fout.write(json.dumps(self.music))
                     print(self.music)
                     print(
