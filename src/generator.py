@@ -243,11 +243,11 @@ class App:
             "base_highest_note": 26,  # ベース（ルート）最高音
         }
         self.loop = True
-        with open("tones.json", "rt") as fin:
+        with open("tones.json", "rt", encoding="utf-8") as fin:
             self.tones = json.loads(fin.read())
-        with open("patterns.json", "rt") as fin:
+        with open("patterns.json", "rt", encoding="utf-8") as fin:
             self.patterns = json.loads(fin.read())
-        with open("generator.json", "rt") as fin:
+        with open("generator.json", "rt", encoding="utf-8") as fin:
             self.generator = json.loads(fin.read())
         # タブ、共通ボタン、アイコン
         self.tabs = []
@@ -362,7 +362,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.00", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.01", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
@@ -527,8 +527,8 @@ class App:
             ("", ""),
             ("【ローカルでうごかしているばあい】", "[When running in a local environment]"),
             (
-                "　プロジェクトルートの music.json にほぞんしました。",
-                "  It is stored in 'music.json' in the project root.",
+                "　プログラムのフォルダの music.json にほぞんしました。",
+                "  Saved in 'music.json' in the program folder.",
             ),
             ("", ""),
             ("【ブラウザでうごかしているばあい】", "[When running in a browser]"),
@@ -681,7 +681,7 @@ class App:
                     if self.prev_note == note[0]:
                         cur_idx = idx
                         break
-                # 休符（間の音符が1個のときは置かない＋給付は連続しない）
+                # 休符（間の音符が1個のときは置かない＋休符は連続しない）
                 if (
                     px.rndf(0.0, 1.0) < parm["melo_rest_rate"]
                     and self.note_continue_count != 1
