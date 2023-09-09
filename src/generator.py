@@ -3,6 +3,12 @@ import os
 import json
 import sounds
 
+LOCAL = False
+try:
+    from js import Blob, URL, document
+except:
+    LOCAL = True
+
 # カラー定義
 COL_BACK_PRIMARY = 7
 COL_BACK_SECONDARY = 12
@@ -231,7 +237,7 @@ class Button(Element):
 # アプリ
 class App:
     def __init__(self):
-        self.output_file = os.path.abspath("music.json")
+        self.output_file = "music.json"
         px.init(256, 256, title="8bit BGM generator", quit_key=px.KEY_NONE)
         px.load("assets.pyxres")
         self.bdf = BDFRenderer("misaki_gothic.bdf")
@@ -333,12 +339,19 @@ class App:
                     if px.play_pos(0):
                         self.play()
                 elif icon.id == 3:
-                    with open(self.output_file, "wt") as fout:
-                        fout.write(json.dumps(self.music))
-                    print(self.music)
-                    print(
-                        "Sample program to play a song: https://github.com/shiromofufactory/8bit-bgm-generator/blob/master/play.py"
-                    )
+                    if LOCAL:
+                        with open(os.path.abspath(self.output_file), "wt") as fout:
+                            fout.write(json.dumps(self.music))
+                    else:
+                        blob = Blob.new(self.music, {"type": "text/plain"})
+                        blob_url = URL.createObjectURL(blob)
+                        a = document.createElement("a")
+                        a.href = blob_url
+                        a.download = self.output_file
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                        URL.revokeObjectURL(blob_url)
                     self.show_export = True
         for button in self.buttons:
             if button.visible(self) and button.mouse_in():
@@ -362,7 +375,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.01", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.02", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
@@ -400,15 +413,13 @@ class App:
         for icon in self.icons:
             icon.draw(self)
         if self.show_export:
-            qr_size = 60
-            h = 12 * 7 + 18 + qr_size
-            y = 24
+            h = 12 * 5 + 18
+            y = 72
             px.rect(20, y + 4, 224, h, COL_SHADOW)
             px.rect(16, y, 224, h, COL_BTN_SELECTED)
             px.rectb(16, y, 224, h, COL_BTN_BASIC)
-            for i in range(7):
+            for i in range(5):
                 self.text(20, y + 4 + 12 * i, 24 + i, COL_TEXT_BASIC)
-            px.blt(128 - qr_size / 2, y + 8 + 12 * 7, 1, 0, 0, qr_size, qr_size)
         # 鍵盤
         sx = 8
         sy = 232
@@ -533,13 +544,8 @@ class App:
             ("", ""),
             ("【ブラウザでうごかしているばあい】", "[When running in a browser]"),
             (
-                "　かいはつしゃコンソールからjsonデータを",
-                " Copy the json data from the developer console",
-            ),
-            ("　コピーして、テキストエディタでほぞんしてください。", " and save it in a text editor."),
-            (
-                "　くわしいやりかたは、したのＱＲコードから。",
-                " For more information, access the QR code below.",
+                "　music.json がダウンロードされます。",
+                " 'music.json' will be downloaded.",
             ),
         ]
         lang = self.parm["language"]
