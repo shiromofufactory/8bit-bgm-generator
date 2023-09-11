@@ -152,7 +152,7 @@ class App:
             "preset": 0,
             "transpose": 0,
             "language": 1,
-            "melo_jutout_rate": 0.2,  # 音符の半ずらし発生率
+            "melo_jutout_rate": 0.4,  # 音符の半ずらし発生率
             "base_highest_note": 26,  # ベース（ルート）最高音
         }
         self.loop = True
@@ -571,6 +571,8 @@ class App:
         parm = self.parm
         cur_chord_idx = -1  # 現在のコード（self.chord_listsのインデックス）
         cur_chord_loc = -1  # 現在のコードの開始位置
+        chord_list = []
+        is_repeat = False  # リピートモード
         self.note_continue_count = 0  # 音符の連続個数（休符が入るとリセット）
         self.prev_note = -1  # 直前のメロディー音
         self.first_note = True  # コード切り替え後の最初のノート
@@ -579,27 +581,38 @@ class App:
             # すでに埋まっていたらスキップ
             if self.melody_notes[loc] != -2:
                 continue
+            # 生成する音符の長さを取得
+            note_len = self.get_note_len(loc)
             # コード切替判定
+            change_code = False
+            premonitory = False
             (next_chord_idx, next_chord_loc) = self.get_chord(loc)
             if next_chord_idx > cur_chord_idx:
+                change_code = True
+            elif not is_repeat and loc + note_len > next_chord_loc:
+                (next_chord_idx, next_chord_loc) = self.get_chord(loc + note_len)
+                change_code = True
+                premonitory = True
+                print(loc, note_len, "先取音発生")
+            if change_code:
                 chord_list = self.chord_lists[next_chord_idx]
                 cur_chord_idx = next_chord_idx
                 cur_chord_loc = loc
                 self.first_note = True
+                is_repeat = not chord_list["repeat"] is None
             # 小節単位の繰り返し
-            if not chord_list["repeat"] is None:
+            if is_repeat:
                 repeat_loc = self.chord_lists[chord_list["repeat"]]["loc"]
                 repeat_note = self.melody_notes[repeat_loc + loc - cur_chord_loc]
                 self.put_melody(loc, repeat_note)
                 continue
-            # 生成する音符の長さを取得
-            note_len = self.get_note_len(loc, next_chord_loc)
             # 直前のメロディーのインデックスを今のコードリストと照合(構成音から外れていたらNone)
             cur_idx = None
-            for idx, note in enumerate(chord_list["notes"]):
-                if self.prev_note == note[0]:
-                    cur_idx = idx
-                    break
+            if not premonitory:
+                for idx, note in enumerate(chord_list["notes"]):
+                    if self.prev_note == note[0]:
+                        cur_idx = idx
+                        break
             # 休符（休符の後の音符が2個未満のときはスキップ）
             if (
                 px.rndf(0.0, 1.0) < parm["melo_rest_rate"]
@@ -700,20 +713,20 @@ class App:
         return idx, next_chord_loc
 
     # 生成する音符の長さを決める
-    def get_note_len(self, loc, next_chord_loc):
+    def get_note_len(self, loc):
         parm = self.parm
         seed = px.rndf(0.0, 1.0)
         beat = loc % 4
         if (
             seed <= list_melo_length_rate[parm["melo_length_rate"]][0]
-            and loc + 3 < next_chord_loc
+            and loc + 3 < self.total_len
             and (beat in [0, 2])
             and (beat == 0 or px.rndf(0.0, 1.0) < parm["melo_jutout_rate"])
         ):
             return 4
         elif (
             seed <= list_melo_length_rate[parm["melo_length_rate"]][1]
-            and loc + 1 < next_chord_loc
+            and loc + 1 < self.total_len
             and (beat in [0, 2] or px.rndf(0.0, 1.0) < parm["melo_jutout_rate"])
         ):
             return 2
