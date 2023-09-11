@@ -4,6 +4,8 @@ import json
 import sounds
 from bdf import BDFRenderer
 
+MAKE_SUBMELODY = True
+
 LOCAL = False
 try:
     from js import Blob, URL, document
@@ -211,7 +213,7 @@ class App:
         self.items = []
         self.set_preset(self.parm["preset"])
         self.play()
-        self.saved_playkey = [-1, -1]
+        self.saved_playkey = [-1, -1, -1]
         self.show_export = None
         self.tab = 0
         px.mouse(True)
@@ -365,6 +367,8 @@ class App:
         # 演奏情報
         self.draw_playkey(0, item[6], 11)
         self.draw_playkey(1, item[10], 10)
+        if MAKE_SUBMELODY:
+            self.draw_playkey(2, item[14], 14)
         for i, elm in enumerate(self.patterns):
             y = i // 3
             x = i % 3
@@ -528,7 +532,11 @@ class App:
                 item[7] = 7  # ベース音色
                 item[8] = 7  # ベース音量
                 item[9] = parm["base_quantize"]  # ベース音長
-                if no_drum:
+                if MAKE_SUBMELODY:
+                    item[11] = item[3]
+                    item[12] = 5
+                    item[13] = item[5]
+                elif no_drum:
                     item[11] = item[3]  # リバーブ音色
                     item[12] = 2  # リバーブ音量
                     item[13] = item[5]
@@ -558,7 +566,9 @@ class App:
         for loc in range(self.total_len):
             item = items[loc]
             item[6] = self.melody_notes[loc]
-            if no_drum:
+            if MAKE_SUBMELODY:
+                item[14] = self.submelody_notes[loc]
+            elif no_drum:
                 item[14] = self.melody_notes[
                     (loc + self.total_len - 1) % self.total_len
                 ]
@@ -571,12 +581,13 @@ class App:
         parm = self.parm
         cur_chord_idx = -1  # 現在のコード（self.chord_listsのインデックス）
         cur_chord_loc = -1  # 現在のコードの開始位置
-        chord_list = []
         is_repeat = False  # リピートモード
+        self.chord_list = []
         self.note_continue_count = 0  # 音符の連続個数（休符が入るとリセット）
         self.prev_note = -1  # 直前のメロディー音
         self.first_note = True  # コード切り替え後の最初のノート
         self.melody_notes = [-2 for _ in range(self.total_len)]
+        self.submelody_notes = [-2 for _ in range(self.total_len)]
         for loc in range(self.total_len):
             # すでに埋まっていたらスキップ
             if self.melody_notes[loc] != -2:
@@ -595,21 +606,24 @@ class App:
                 premonitory = True
                 print(loc, note_len, "先取音発生")
             if change_code:
-                chord_list = self.chord_lists[next_chord_idx]
+                self.chord_list = self.chord_lists[next_chord_idx]
                 cur_chord_idx = next_chord_idx
                 cur_chord_loc = loc
                 self.first_note = True
-                is_repeat = not chord_list["repeat"] is None
+                is_repeat = not self.chord_list["repeat"] is None
             # 小節単位の繰り返し
             if is_repeat:
-                repeat_loc = self.chord_lists[chord_list["repeat"]]["loc"]
-                repeat_note = self.melody_notes[repeat_loc + loc - cur_chord_loc]
+                repeat_loc = self.chord_lists[self.chord_list["repeat"]]["loc"]
+                target_loc = repeat_loc + loc - cur_chord_loc
+                repeat_note = self.melody_notes[target_loc]
                 self.put_melody(loc, repeat_note)
+                repeat_note_sub = self.submelody_notes[target_loc]
+                self.put_submelody(loc, repeat_note_sub)
                 continue
             # 直前のメロディーのインデックスを今のコードリストと照合(構成音から外れていたらNone)
             cur_idx = None
             if not premonitory:
-                for idx, note in enumerate(chord_list["notes"]):
+                for idx, note in enumerate(self.chord_list["notes"]):
                     if self.prev_note == note[0]:
                         cur_idx = idx
                         break
@@ -618,23 +632,26 @@ class App:
                 px.rndf(0.0, 1.0) < parm["melo_rest_rate"]
                 and self.note_continue_count > 1
             ):
-                self.put_melody(loc, -1, note_len)
                 print(loc, "休符")
+                self.put_melody(loc, -1, note_len)
+                self.put_submelody(loc, -1, note_len)
                 continue
             # 初音（直前が休符 or コード構成音から外れた場合は、コード構成音を取得）
             if self.prev_note < 0 or cur_idx is None:
-                idx = self.get_target_note(chord_list, self.first_note)
-                note = chord_list["notes"][idx][0]
-                self.put_melody(loc, note, note_len)
+                idx = self.get_target_note(self.first_note)
+                note = self.chord_list["notes"][idx][0]
                 print(loc, "初音")
+                self.put_melody(loc, note, note_len)
+                self.put_submelody(loc, -2, note_len)
                 continue
             # 長音（割合判定）
             if px.rndf(0.0, 1.0) < parm["melo_continue_rate"]:
-                self.put_melody(loc, None, note_len)
                 print(loc, "長音")
+                self.put_melody(loc, None, note_len)
+                self.put_submelody(loc, None, note_len)
                 continue
             # 各種変数準備
-            next_idx = self.get_target_note(chord_list)
+            next_idx = self.get_target_note()
             diff = abs(next_idx - cur_idx)
             direction = 1 if next_idx > cur_idx else -1
             left_space = (next_chord_loc - loc) // note_len  # 小節内にあと何個音符を置けるか
@@ -644,19 +661,21 @@ class App:
                 if cnt and left_space >= cnt * 2:
                     for i in range(cnt):
                         while next_idx == cur_idx:
-                            next_idx = self.get_target_note(chord_list)
+                            next_idx = self.get_target_note()
                         direction = 1 if next_idx > cur_idx else -1
-                        note = chord_list["notes"][cur_idx + direction][0]
+                        note = self.chord_list["notes"][cur_idx + direction][0]
                         prev_note = self.prev_note
                         self.put_melody(loc + i * 2 * note_len, note, note_len)
                         self.put_melody(
                             loc + (i * 2 + 1) * note_len, prev_note, note_len
                         )
                     print(loc, "刺繍音")
+                    self.put_submelody(loc, -2, note_len * 2 * cnt)
                     continue
                 else:
-                    self.put_melody(loc, self.prev_note, note_len)
                     print(loc, "同音")
+                    self.put_melody(loc, self.prev_note, note_len)
+                    self.put_submelody(loc, -2, note_len)
                     continue
             # ステップに必要な長さが足りない/跳躍量が大きい/割合で跳躍音採用
             jump_rate = 0  # parm["melo_rest_rate"] / 2 + 0.1  # 跳躍音採用率
@@ -665,18 +684,22 @@ class App:
                 or diff > 12
                 or px.rndf(0.0, 1.0) < jump_rate
             ):
-                note = chord_list["notes"][next_idx][0]
-                self.put_melody(loc, note, note_len)
+                note = self.chord_list["notes"][next_idx][0]
                 print(loc, "跳躍")
+                self.put_melody(loc, note, note_len)
+                self.put_submelody(loc, -2, note_len)
                 continue
             # ステップ
             cur_loc = loc
             print(loc, "ステップ", note_len)
+            cnt = 0
             while next_idx != cur_idx:
                 cur_idx += direction
-                note = chord_list["notes"][cur_idx][0]
+                note = self.chord_list["notes"][cur_idx][0]
                 self.put_melody(cur_loc, note, note_len)
                 cur_loc += note_len
+                cnt += 1
+            self.put_submelody(loc, -2, note_len * cnt)
 
     # メロディ検査（コード中の重要構成音が入っているか）
     def check_melody(self):
@@ -698,6 +721,10 @@ class App:
             note = self.melody_notes[loc]
             if not note is None and note >= 0 and note % 12 in need_notes_list:
                 need_notes_list.remove(note % 12)
+            if MAKE_SUBMELODY:
+                note = self.melody_notes[loc]
+                if not note is None and note >= 0 and note % 12 in need_notes_list:
+                    need_notes_list.remove(note % 12)
         return True
 
     # コードリスト取得（locがchords_listsの何番目のコードか、次のコードの開始位置を返す）
@@ -733,9 +760,9 @@ class App:
         return 1
 
     # 跳躍音の跳躍先を決定
-    def get_target_note(self, chord_list, force_no_root=False):
-        no_root = force_no_root or chord_list["no_root"]
-        notes = chord_list["notes"]
+    def get_target_note(self, force_no_root=False):
+        no_root = force_no_root or self.chord_list["no_root"]
+        notes = self.chord_list["notes"]
         while True:
             idx = px.rndi(0, len(notes) - 1)
             allowed_types = [1, 3] if no_root else [1, 2, 3]
@@ -759,6 +786,42 @@ class App:
                 self.note_continue_count += 1
             self.prev_note = note
             self.first_note = False
+        print(">", loc, note)
+
+    # サブメロディのトーンを配置
+    def put_submelody(self, loc, note, note_len=1):
+        if note != -2:
+            first_note = note
+            master_note = None
+        else:
+            master_note = self.melody_notes[loc]
+            if master_note is None or master_note < 0:
+                master_note = 0
+            first_note = -1
+            notes = self.chord_list["notes"]
+            cur_note = master_note - 2
+            while cur_note >= self.parm["melo_lowest_note"]:
+                cur_note -= 1
+                for n in notes:
+                    if n[0] == cur_note and n[1] in [1, 2, 3]:
+                        first_note = cur_note
+                        cur_note = 0
+                        break
+        for idx in range(note_len):
+            if (
+                not self.melody_notes[loc + idx] is None
+                and self.melody_notes[loc + idx] >= 0
+            ):
+                master_note = self.melody_notes[loc + idx]
+            subnote = first_note if idx == 0 else None
+            if (
+                not master_note is None
+                and not first_note is None
+                and first_note > master_note - 3
+            ):
+                subnote = -1
+                first_note = -1
+            self.submelody_notes[loc + idx] = subnote
 
 
 App()
