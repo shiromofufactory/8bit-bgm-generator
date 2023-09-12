@@ -38,7 +38,7 @@
         { "loc": 80, "repeat": 1 },
         { "loc": 96, "notes": [1, 0, 9, 3, 0, 9, 0, 9, 2, 0, 9, 0] },
         { "loc": 104, "notes": [9, 0, 1, 9, 0, 3, 0, 9, 9, 0, 2, 0] },
-        { "loc": 112, "notes": [2, 0, 9, 0, 9, 1, 0, 1, 0, 9, 0, 9] },
+        { "loc": 112, "notes": [2, 0, 9, 0, 9, 1, 0, 3, 0, 9, 0, 9] },
         { "loc": 120, "notes": [2, 0, 9, 0, 1, 9, 0, 3, 0, 9, 0, 9] }
       ]
     },
@@ -249,7 +249,7 @@
       "base": 3,
       "drums": 4,
       "melo_tone": 1,
-      "melo_lowest_note": 33,
+      "melo_lowest_note": 30,
       "melo_length_rate": 4,
       "melo_continue_rate": 0.0,
       "melo_rest_rate": 0.4
