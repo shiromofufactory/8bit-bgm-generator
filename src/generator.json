@@ -188,11 +188,7 @@
       "base": 4,
       "base_quantize": 14,
       "drums": 4,
-      "melo_tone": 0,
-      "melo_lowest_note": 28,
-      "melo_length_rate": 1,
-      "melo_continue_rate": 0.2,
-      "melo_rest_rate": 0.2
+      "melo_tone": 0
     },
     {
       "speed": 216,
@@ -200,11 +196,7 @@
       "base": 6,
       "base_quantize": 12,
       "drums": 5,
-      "melo_tone": 3,
-      "melo_lowest_note": 28,
-      "melo_length_rate": 3,
-      "melo_continue_rate": 0.0,
-      "melo_rest_rate": 0.4
+      "melo_tone": 3
     },
     {
       "speed": 312,
@@ -212,11 +204,7 @@
       "base": 1,
       "base_quantize": 15,
       "drums": -1,
-      "melo_tone": 5,
-      "melo_lowest_note": 30,
-      "melo_length_rate": 0,
-      "melo_continue_rate": 0.4,
-      "melo_rest_rate": 0.2
+      "melo_tone": 5
     },
     {
       "speed": 276,
@@ -224,11 +212,7 @@
       "base": 2,
       "base_quantize": 15,
       "drums": 3,
-      "melo_tone": 4,
-      "melo_lowest_note": 28,
-      "melo_length_rate": 0,
-      "melo_continue_rate": 0.0,
-      "melo_rest_rate": 0.1
+      "melo_tone": 4
     },
     {
       "speed": 240,
@@ -236,11 +220,7 @@
       "base": 0,
       "base_quantize": 14,
       "drums": 2,
-      "melo_tone": 0,
-      "melo_lowest_note": 29,
-      "melo_length_rate": 0,
-      "melo_continue_rate": 0.6,
-      "melo_rest_rate": 0.2
+      "melo_tone": 0
     },
     {
       "speed": 216,
@@ -248,11 +228,7 @@
       "base_quantize": 14,
       "base": 3,
       "drums": 4,
-      "melo_tone": 1,
-      "melo_lowest_note": 30,
-      "melo_length_rate": 4,
-      "melo_continue_rate": 0.0,
-      "melo_rest_rate": 0.4
+      "melo_tone": 1
     },
     {
       "speed": 192,
@@ -260,11 +236,7 @@
       "base": 5,
       "base_quantize": 13,
       "drums": 6,
-      "melo_tone": 0,
-      "melo_lowest_note": 28,
-      "melo_length_rate": 2,
-      "melo_continue_rate": 0.2,
-      "melo_rest_rate": 0.2
+      "melo_tone": 0
     },
     {
       "speed": 168,
@@ -272,11 +244,7 @@
       "base": 7,
       "base_quantize": 15,
       "drums": 7,
-      "melo_tone": 3,
-      "melo_lowest_note": 28,
-      "melo_length_rate": 0,
-      "melo_continue_rate": 0.0,
-      "melo_rest_rate": 0.0
+      "melo_tone": 3
     }
   ]
 }
