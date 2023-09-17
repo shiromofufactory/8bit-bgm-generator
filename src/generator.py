@@ -4,7 +4,6 @@ import json
 import sounds
 from bdf import BDFRenderer
 
-MAKE_SUBMELODY = True
 SUBMELODY_DIFF = 5
 SUB_RHYTHM = [0, None, 0, None, 0, None, 0, None, 0, None, 0, None, 0, None, 0, None]
 
@@ -150,6 +149,7 @@ class App:
             "language": 1,
             "base_highest_note": 26,  # ベース（ルート）最高音
             "melo_lowest_note": 28,  # メロディ最低音
+            "sub_tone": 5,  # サブメロディ音色
         }
         self.loop = True
         with open("tones.json", "rt", encoding="utf-8") as fin:
@@ -196,8 +196,11 @@ class App:
         # メロディータブ
         for i, elm in enumerate(list_tones):
             self.set_btn(2, "melo_tone", i, 8 + 24 * i, 50, 24, i + 1)
-        for i, elm in enumerate(list_melo_length_rate):
-            self.set_btn(2, "melo_length_rate", i, 8 + 32 * i, 110, 32, elm[2])
+        for i, elm in enumerate(list_tones):
+            self.set_btn(2, "sub_tone", i, 8 + 24 * i, 80, 24, i + 1)
+        self.set_btn(2, "sub_tone", -1, 8 + 24 * 6, 80, 48, "Not in use")
+        # for i, elm in enumerate(list_melo_length_rate):
+        #     self.set_btn(2, "melo_length_rate", i, 8 + 32 * i, 110, 32, elm[2])
         self.items = []
         self.set_preset(self.parm["preset"])
         self.play()
@@ -210,6 +213,14 @@ class App:
     @property
     def total_len(self):
         return BARS_NUMBERS * 16
+
+    @property
+    def has_submelody(self):
+        return self.parm["sub_tone"] >= 0
+
+    @property
+    def no_drum(self):
+        return self.parm["drums"] < 0
 
     def set_tab(self, *args):
         self.tabs.append(Tab(*args))
@@ -256,6 +267,7 @@ class App:
                     self.show_export = True
         for button in self.buttons:
             if button.visible(self) and button.mouse_in():
+                prev_value = self.parm[button.type]
                 self.parm[button.type] = button.key
                 if button.type == "language":
                     return
@@ -267,6 +279,12 @@ class App:
                         "chord",
                         "melo_length_rate",
                     ]
+                    # サブ音色変更時、Beforeがサブなしだったらメロディ再生成する
+                    if button.type == "sub_tone":
+                        if (prev_value < 0 and button.key >= 0) or (
+                            prev_value >= 0 and button.key < 0
+                        ):
+                            make_melody = True
                     self.generate_music(make_melody)
                 self.play()
 
@@ -295,8 +313,13 @@ class App:
         elif self.tab == 2:
             self.text(8, 40, 16, COL_TEXT_BASIC)
             melo_tone_name = list_tones[self.parm["melo_tone"]][1]
-            self.text(40, 40, melo_tone_name, COL_TEXT_MUTED)
+            self.text(88, 40, melo_tone_name, COL_TEXT_MUTED)
             self.text(8, 70, 17, COL_TEXT_BASIC)
+            if self.parm["sub_tone"] >= 0:
+                sub_tone_name = list_tones[self.parm["sub_tone"]][1]
+            else:
+                sub_tone_name = "-"
+            self.text(88, 70, sub_tone_name, COL_TEXT_MUTED)
             self.text(8, 100, 18, COL_TEXT_BASIC)
             px.rectb(8, 124, 240, 24, COL_TEXT_MUTED)
             self.text(16, 128, 19, COL_TEXT_MUTED)
@@ -332,7 +355,7 @@ class App:
             px.rect(sx + 33 + o * 42, sy, 5, 9, 0)
         # 音域バー
         mln = self.parm["melo_lowest_note"]
-        if MAKE_SUBMELODY:
+        if self.has_submelody:
             (x1, _) = self.get_piano_xy(mln + SUBMELODY_DIFF)
             (x2, _) = self.get_piano_xy(mln + 16 + SUBMELODY_DIFF)
             px.rect(x1, 226, x2 - x1 + 3, 2, 11)
@@ -361,7 +384,7 @@ class App:
         # 演奏情報
         self.draw_playkey(0, item[6], 11)
         self.draw_playkey(1, item[10], 10)
-        if MAKE_SUBMELODY:
+        if self.has_submelody and self.no_drum:
             self.draw_playkey(2, item[14], 14)
         for i, elm in enumerate(self.patterns):
             y = i // 3
@@ -431,8 +454,8 @@ class App:
                 "メロディにリバーブがかかります。",
                 "reverb is applied to the melody instead of the drum part.",
             ),
-            ("ねいろ", "Tone"),
-            ("おとのたかさ（さいていおん）", "Sound Height (lowest note)"),
+            ("ねいろ（メイン）", "Tone (1st channel)"),
+            ("ねいろ（サブ）", "Tone (2nd channel)"),
             ("おんぷのながさ", "Notes Length"),
             (
                 "どのながさの おんぷをつかうか けっていします。",
@@ -465,7 +488,6 @@ class App:
     def generate_music(self, make_melody=True):
         px.stop()
         parm = self.parm
-        no_drum = parm["drums"] < 0
         base = self.generator["base"][parm["base"]]
         drums = self.generator["drums"][parm["drums"]]
         chord = self.generator["chords"][parm["chord"]]
@@ -493,7 +515,7 @@ class App:
                         note_chord_cnt += 1
                 chord_list["no_root"] = note_chord_cnt > 3
                 # レンジを決める
-                if MAKE_SUBMELODY:
+                if self.has_submelody:
                     chord_list["notes"] = self.make_chord_notes(notes, SUBMELODY_DIFF)
                     chord_list["subnotes"] = self.make_chord_notes(notes)
                 else:
@@ -512,21 +534,23 @@ class App:
                 item[1] = 48  # 4/4拍子
                 item[2] = 3  # 16分音符
                 item[3] = list_tones[parm["melo_tone"]][0]  # メロディ音色
-                item[4] = 5  # メロディ音量
+                item[4] = 6  # メロディ音量
                 item[5] = 14  # メロディ音長
                 item[7] = 7  # ベース音色
                 item[8] = 7  # ベース音量
                 item[9] = parm["base_quantize"]  # ベース音長
-                if MAKE_SUBMELODY:
-                    item[11] = item[3]
+                if self.has_submelody and self.no_drum:
+                    item[11] = list_tones[parm["sub_tone"]][0]
                     item[12] = 3
                     item[13] = 15
-                elif no_drum:
+                elif self.no_drum:
                     item[11] = item[3]  # リバーブ音色
                     item[12] = 2  # リバーブ音量
                     item[13] = item[5]
                 else:
+                    item[11] = 0
                     item[12] = 5  # ドラム音量
+                    item[13] = 15
             # ベース音設定
             pattern = "basic" if loc // 16 < 7 else "final"
             base_note = base[pattern][tick]
@@ -539,7 +563,7 @@ class App:
                 base_note = base_root + base_note
             item[10] = base_note
             # ドラム音設定
-            if not no_drum:
+            if not self.no_drum:
                 pattern = "basic" if (loc // 16) % 4 < 3 else "final"
                 item[14] = drums[pattern][tick] if drums[pattern][tick] else None
         # メロディー生成
@@ -554,9 +578,9 @@ class App:
         for loc in range(self.total_len):
             item = items[loc]
             item[6] = self.melody_notes[loc]
-            if MAKE_SUBMELODY:
+            if self.has_submelody and self.no_drum:
                 item[14] = self.submelody_notes[loc]
-            elif no_drum:
+            elif self.no_drum:
                 item[14] = self.melody_notes[
                     (loc + self.total_len - 1) % self.total_len
                 ]
@@ -616,7 +640,7 @@ class App:
             if not note is None and note >= 0:
                 prev_note_loc = loc
                 self.prev_note = note
-            elif loc - prev_note_loc >= 2 and loc % 2 == 0:
+            elif loc - prev_note_loc >= 4 and loc % 4 == 0:
                 notesets = self.get_next_notes(rhythm_sub, loc, True)
                 if not notesets is None:
                     for noteset in notesets:
@@ -767,8 +791,8 @@ class App:
             note = self.melody_notes[loc]
             if not note is None and note >= 0 and note % 12 in need_notes_list:
                 need_notes_list.remove(note % 12)
-            if MAKE_SUBMELODY:
-                note = self.melody_notes[loc]
+            if self.has_submelody:
+                note = self.submelody_notes[loc]
                 if not note is None and note >= 0 and note % 12 in need_notes_list:
                     need_notes_list.remove(note % 12)
         return True
@@ -832,11 +856,12 @@ class App:
                 and self.melody_notes[loc + idx] >= 0
             ):
                 master_note = self.melody_notes[loc + idx]
-            if (
+            duplicate = (
                 not master_note is None
                 and not subnote is None
                 and (abs(subnote > master_note) < 3)
-            ):
+            )
+            if duplicate:
                 subnote = self.search_downer_note(subnote, master_note)
             self.submelody_notes[loc + idx] = (
                 subnote if subnote != prev_subnote else None
@@ -844,7 +869,7 @@ class App:
             prev_subnote = subnote
 
     def search_downer_note(self, prev_note, master_note):
-        if MAKE_SUBMELODY and master_note >= 0:
+        if self.has_submelody and master_note >= 0:
             notes = self.chord_list["subnotes"]
             if not prev_note is None and abs(prev_note - master_note) >= 3:
                 return prev_note

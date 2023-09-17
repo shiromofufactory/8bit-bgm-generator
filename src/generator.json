@@ -188,7 +188,8 @@
       "base": 4,
       "base_quantize": 14,
       "drums": 4,
-      "melo_tone": 0
+      "melo_tone": 0,
+      "sub_tone": -1
     },
     {
       "speed": 216,
@@ -196,7 +197,8 @@
       "base": 6,
       "base_quantize": 12,
       "drums": 5,
-      "melo_tone": 3
+      "melo_tone": 3,
+      "sub_tone": 3
     },
     {
       "speed": 312,
@@ -204,7 +206,8 @@
       "base": 1,
       "base_quantize": 15,
       "drums": -1,
-      "melo_tone": 5
+      "melo_tone": 5,
+      "sub_tone": -1
     },
     {
       "speed": 276,
@@ -212,7 +215,8 @@
       "base": 2,
       "base_quantize": 15,
       "drums": 3,
-      "melo_tone": 4
+      "melo_tone": 4,
+      "sub_tone": -1
     },
     {
       "speed": 240,
@@ -220,7 +224,8 @@
       "base": 0,
       "base_quantize": 14,
       "drums": 2,
-      "melo_tone": 0
+      "melo_tone": 0,
+      "sub_tone": 1
     },
     {
       "speed": 216,
@@ -228,7 +233,8 @@
       "base_quantize": 14,
       "base": 3,
       "drums": 4,
-      "melo_tone": 1
+      "melo_tone": 1,
+      "sub_tone": -1
     },
     {
       "speed": 192,
@@ -236,7 +242,8 @@
       "base": 5,
       "base_quantize": 13,
       "drums": 6,
-      "melo_tone": 0
+      "melo_tone": 0,
+      "sub_tone": -1
     },
     {
       "speed": 168,
@@ -244,7 +251,8 @@
       "base": 7,
       "base_quantize": 15,
       "drums": 7,
-      "melo_tone": 3
+      "melo_tone": 3,
+      "sub_tone": -1
     }
   ]
 }
