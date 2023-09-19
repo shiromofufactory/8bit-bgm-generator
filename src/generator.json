@@ -189,7 +189,9 @@
       "base_quantize": 14,
       "drums": 4,
       "melo_tone": 0,
-      "sub_tone": -1
+      "sub_tone": 0,
+      "melo_lowest_note": 28,
+      "instrumentation": 3
     },
     {
       "speed": 216,
@@ -198,16 +200,20 @@
       "base_quantize": 12,
       "drums": 5,
       "melo_tone": 3,
-      "sub_tone": 3
+      "sub_tone": 3,
+      "melo_lowest_note": 28,
+      "instrumentation": 3
     },
     {
       "speed": 312,
       "chord": 2,
       "base": 1,
       "base_quantize": 15,
-      "drums": -1,
+      "drums": 0,
       "melo_tone": 5,
-      "sub_tone": -1
+      "sub_tone": 5,
+      "melo_lowest_note": 30,
+      "instrumentation": 0
     },
     {
       "speed": 276,
@@ -216,7 +222,9 @@
       "base_quantize": 15,
       "drums": 3,
       "melo_tone": 4,
-      "sub_tone": -1
+      "sub_tone": 4,
+      "melo_lowest_note": 28,
+      "instrumentation": 3
     },
     {
       "speed": 240,
@@ -225,7 +233,9 @@
       "base_quantize": 14,
       "drums": 2,
       "melo_tone": 0,
-      "sub_tone": 1
+      "sub_tone": 1,
+      "melo_lowest_note": 29,
+      "instrumentation": 3
     },
     {
       "speed": 216,
@@ -234,7 +244,9 @@
       "base": 3,
       "drums": 4,
       "melo_tone": 1,
-      "sub_tone": -1
+      "sub_tone": 1,
+      "melo_lowest_note": 30,
+      "instrumentation": 2
     },
     {
       "speed": 192,
@@ -243,7 +255,9 @@
       "base_quantize": 13,
       "drums": 6,
       "melo_tone": 0,
-      "sub_tone": -1
+      "sub_tone": 0,
+      "melo_lowest_note": 28,
+      "instrumentation": 1
     },
     {
       "speed": 168,
@@ -252,7 +266,9 @@
       "base_quantize": 15,
       "drums": 7,
       "melo_tone": 3,
-      "sub_tone": -1
+      "sub_tone": 3,
+      "melo_lowest_note": 28,
+      "instrumentation": 3
     }
   ]
 }
