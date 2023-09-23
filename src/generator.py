@@ -49,6 +49,8 @@ list_melo_lowest_note = [
     (32, "G#2"),
     (33, "A2"),
 ]
+list_melo_use16 = [(True, "Yes"), (False, "No")]
+list_melo_density = [(0, "less"), (2, "normal"), (4, "more")]
 
 
 # 部品
@@ -164,8 +166,7 @@ class App:
             "transpose": 0,
             "language": 1,
             "base_highest_note": 26,  # ベース（ルート）最高音
-            "melo_lowest_note": 28,  # メロディ最低音
-            "instrumentation": 1,  # 編成（0: メイン＋ベース、1: ＋ドラム、2: ＋サブ、3: ＋フル）
+            "melo_density": 4,  # メロディ濃度(0-4)
         }
         self.loop = True
         with open("tones.json", "rt", encoding="utf-8") as fin:
@@ -217,6 +218,10 @@ class App:
             self.set_btn(2, "sub_tone", i, 8 + 24 * i, 80, 24, i + 1, 2)
         for i, elm in enumerate(list_melo_lowest_note):
             self.set_btn(2, "melo_lowest_note", elm[0], 8 + 24 * i, 110, 24, elm[1])
+        for i, elm in enumerate(list_melo_density):
+            self.set_btn(2, "melo_density", elm[0], 8 + 48 * i, 140, 48, elm[1])
+        for i, elm in enumerate(list_melo_use16):
+            self.set_btn(2, "melo_use16", elm[0], 8 + 24 * i, 170, 24, elm[1])
         self.items = []
         self.set_preset(self.parm["preset"])
         self.play()
@@ -294,7 +299,10 @@ class App:
                         "transpose",
                         "instrumentation",
                         "chord",
+                        "base",
                         "melo_lowest_note",
+                        "melo_density",
+                        "melo_use16",
                     ]
                     # サブ音色変更時、Beforeがサブなしだったらメロディ再生成する
                     if button.type == "sub_tone":
@@ -308,7 +316,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.02", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.10", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
@@ -339,11 +347,8 @@ class App:
                 sub_tone_name = "-"
             self.text(88, 70, sub_tone_name, COL_TEXT_MUTED)
             self.text(8, 100, 18, COL_TEXT_BASIC)
-            px.rectb(8, 124, 240, 24, COL_TEXT_MUTED)
-            self.text(16, 128, 19, COL_TEXT_MUTED)
-            self.text(16, 136, 20, COL_TEXT_MUTED)
-            self.text(8, 156, 21, COL_TEXT_BASIC)
-            self.text(8, 186, 22, COL_TEXT_BASIC)
+            self.text(8, 130, 19, COL_TEXT_BASIC)
+            self.text(8, 160, 20, COL_TEXT_BASIC)
         # タブ、ボタン、モーダル
         for tab in self.tabs:
             tab.draw(self)
@@ -472,16 +477,10 @@ class App:
             ("ねいろ（メイン）", "Tone (1st channel)"),
             ("ねいろ（サブ）", "Tone (2nd channel)"),
             ("おとのたかさ（さいていおん）", "Sound Height (lowest note)"),
-            (
-                "どのながさの おんぷをつかうか けっていします。",
-                "Determines which length of notes to use.",
-            ),
-            (
-                "「４／８」なら ４ぶおんぷと８ぶおんぷを　つかいます。",
-                "ex) '4/8' uses quarter notes and eighth notes.",
-            ),
-            ("きゅうふのひんど", "Rests Ratio"),
-            ("じぞくおんのひんど", "Sustained Tone Ratio"),
+            ("おんぷのかず", "Number of notes"),
+            ("１６ぶおんぷをつかう？", "Use 16th notes?"),
+            ("", ""),
+            ("", ""),
             ("", ""),
             ("【ローカルでうごかしているばあい】", "[When running in a local environment]"),
             (
@@ -512,10 +511,14 @@ class App:
         # バッキング生成
         items = []
         self.base_notes = []
+        self.cur_chord_idx = -1
         for loc in range(self.total_len):
             items.append([None for _ in range(19)])
             (chord_idx, _) = self.get_chord(loc)
-            chord_list = self.chord_lists[chord_idx]
+            if chord_idx > self.cur_chord_idx:
+                chord_list = self.chord_lists[chord_idx]
+                self.cur_chord_idx = chord_idx
+                self.cur_chord_loc = loc
             item = items[loc]
             tick = loc % 16  # 拍(0-15)
             if loc == 0:  # 最初の行（セットアップ）
@@ -546,22 +549,46 @@ class App:
                     item[13] = item[5]
 
             # ベース音設定
-            pattern = "basic" if loc // 16 < 7 else "final"
-            base_note = base[pattern][tick]
-            if not base_note is None and base_note >= 0:
-                highest = parm["base_highest_note"]
+            if not chord_list["repeat"] is None:
+                repeat_loc = self.chord_lists[chord_list["repeat"]]["loc"]
+                target_loc = repeat_loc + loc - self.cur_chord_loc
+                item[10] = items[target_loc][10]
+            else:
                 pattern = "basic" if loc // 16 < 7 else "final"
-                base_root = 12 + parm["transpose"] + chord_list["base"]
-                while base_root + 24 > highest:
-                    base_root -= 12
-                base_note = base_root + base_note
-            item[10] = base_note
+                base_str = base[pattern][tick]
+                if base_str == ".":
+                    base_note = None
+                elif base_str == "0":
+                    base_note = -1
+                else:
+                    highest = parm["base_highest_note"]
+                    pattern = "basic" if loc // 16 < 7 else "final"
+                    base_root = 12 + parm["transpose"] + chord_list["base"]
+                    while base_root + 24 > highest:
+                        base_root -= 12
+                    notes = chord_list["notes_origin"]
+                    adjust_list = [0, -1, 1, -2, 2, -3, 3]
+                    adjust_idx = 0
+                    base_add = {"1": 7, "2": 12, "3": 19, "4": 24}[base_str]
+                    while notes:
+                        adjust = adjust_list[adjust_idx]
+                        base_note = base_root + base_add + adjust
+                        tmp = (base_note + parm["transpose"]) % 12
+                        print(notes, tmp, notes[tmp])
+                        if notes[(base_note + parm["transpose"]) % 12] in [1, 2, 3]:
+                            break
+                        adjust_idx += 1
+                item[10] = base_note
             self.base_notes.append(base_note)
             # ドラム音設定
             if self.with_drum:
                 pattern = "basic" if (loc // 16) % 4 < 3 else "final"
                 idx = 18 if self.with_submelody else 14
-                item[idx] = drums[pattern][tick] if drums[pattern][tick] else None
+                drum_str = drums[pattern][tick]
+                if drum_str == "0":
+                    item[idx] = None
+                else:
+                    item[idx] = ":" + drum_str
         # メロディー生成
         failure_cnt = 0
         while make_melody:
@@ -602,7 +629,7 @@ class App:
             if "repeat" in progression:
                 chord_list["base"] = self.chord_lists[progression["repeat"]]["base"]
             if "notes" in progression:
-                notes = progression["notes"]
+                notes = [int(s) for s in progression["notes"]]
                 chord_list["notes_origin"] = notes
                 note_chord_cnt = 0
                 # ベース音設定
@@ -626,7 +653,7 @@ class App:
         idx = 0
         results = []
         while True:
-            note_type = notes[idx % 12]
+            note_type = int(notes[idx % 12])
             note = 12 + idx + parm["transpose"]
             if note >= parm["melo_lowest_note"] + tone_up:
                 if note_type in [1, 2, 3, 9]:
@@ -644,7 +671,11 @@ class App:
         self.submelody_notes = [-2 for _ in range(self.total_len)]
         # メインメロディ
         print("=== MAIN START ===")
-        rhythm_main = self.get_rhythm_set()
+        rhythm_main_list = []
+        for _ in range(5):
+            rhythm_main_list.append(self.get_rhythm_set())
+        rhythm_main_list.sort(key=len)
+        rhythm_main = rhythm_main_list[self.parm["melo_density"]]
         for loc in range(self.total_len):
             # すでに埋まっていたらスキップ
             if self.melody_notes[loc] != -2:
@@ -666,7 +697,6 @@ class App:
                 self.put_submelody(loc, -2, notesets_len)
         # サブメロディ
         print("=== SUB START ===")
-        print(self.melody_notes)
         rhythm_sub = self.get_rhythm_set(True)
         prev_note_loc = -1
         for loc in range(self.total_len):
@@ -681,6 +711,7 @@ class App:
                         self.put_submelody(noteset[0], noteset[1], noteset[2])
                     prev_note_loc = loc
 
+    # メロディのリズムを取得
     def get_rhythm_set(self, is_sub=False):
         self.cur_chord_idx = -1  # 現在のコード（self.chord_listsのインデックス）
         self.cur_chord_loc = -1  # 現在のコードの開始位置
@@ -689,21 +720,42 @@ class App:
         self.prev_note = -1  # 直前のメロディー音
         self.first_in_chord = True  # コード切り替え後の最初のノート
         results = []
-        for bar in range(BARS_NUMBERS):
-            if is_sub:
-                pat_line = SUB_RHYTHM
-            else:
-                while True:
-                    pat_line = self.melo_rhythm[px.rndi(0, len(self.melo_rhythm) - 1)]
-                    if not pat_line[0] is None:
-                        break  # 先頭が持続音のものは避ける（暫定）
-            for idx, pat_one in enumerate(pat_line):
-                loc = bar * 16 + idx
-                if not pat_one is None:
-                    results.append((loc, pat_one))
+        used16 = False
+        while True:
+            for bar in range(BARS_NUMBERS):
+                if is_sub:
+                    pat_line = SUB_RHYTHM
+                else:
+                    while True:
+                        pat_line = self.melo_rhythm[
+                            px.rndi(0, len(self.melo_rhythm) - 1)
+                        ]
+                        # 16分音符回避設定
+                        if self.has_16th_note(pat_line):
+                            if not self.parm["melo_use16"]:
+                                continue
+                            used16 = True
+                        # 先頭が持続音のものは避ける（暫定）
+                        if not pat_line[0] is None:
+                            break
+                for idx, pat_one in enumerate(pat_line):
+                    loc = bar * 16 + idx
+                    if not pat_one is None:
+                        results.append((loc, pat_one))
+            if is_sub or not self.parm["melo_use16"] or used16:
+                break
         for _ in range(2):
             results.append((self.total_len, -1))
         return results
+
+    # 16分音符が含まれるか
+    def has_16th_note(self, line):
+        prev_str = None
+        for i in line:
+            if i == 0 and prev_str == 0:
+                return True
+            prev_str = i
+        return False
 
     def get_next_notes(self, rhythm_set, loc, is_sub=False):
         pat = None
@@ -845,8 +897,6 @@ class App:
 
     # 跳躍音の跳躍先を決定
     def get_target_note(self, is_sub=False, loc=None):
-        print("GET TARGET NOTE START", is_sub)
-        print(" PREV NOTE", self.prev_note)
         no_root = self.first_in_chord or self.chord_list["no_root"]
         allowed_types = [1, 3] if no_root else [1, 2, 3]
         notes = self.get_subnotes(loc) if is_sub else self.chord_list["notes"]
@@ -872,7 +922,6 @@ class App:
                 # 近い音ほど出やすい（オクターブ差は補正、サブはそうではない）
                 if px.rndi(0, 15) < factor and not is_sub:
                     continue
-            print("GET TARGET NOTE END")
             return idx
 
     # メロディのトーンを配置
@@ -914,6 +963,7 @@ class App:
             )
             prev_subnote = subnote
 
+    # メロの下ハモを探す
     def search_downer_note(self, prev_note, master_note, loc):
         if self.with_submelody and master_note >= 0:
             notes = self.get_subnotes(loc)
@@ -955,11 +1005,6 @@ class App:
                         has_important_tone = True
             idx += 1
         self.chord_notes = results
-        print("-- GET SUBNOTES START --")
-        # print(self.melody_notes)
-        print(base_note, master_note)
-        print(results)
-        print("-- GET SUBNOTES END --")
         return results
 
 
