@@ -1,5 +1,6 @@
 import pyxel as px
 import os
+import sys
 import json
 import sounds
 from bdf import BDFRenderer
@@ -9,7 +10,7 @@ SUB_RHYTHM = [0, None, 0, None, 0, None, 0, None, 0, None, 0, None, 0, None, 0, 
 
 LOCAL = False
 try:
-    from js import Blob, URL, document
+    from js import Blob, URL, document, window
 except:
     LOCAL = True
 
@@ -157,7 +158,8 @@ class Button(Element):
 # アプリ
 class App:
     def __init__(self):
-        self.output_file = "music.json"
+        self.output_json = "music.json"
+        self.output_midi = "music.mid"
         px.init(256, 256, title="8bit BGM generator", quit_key=px.KEY_NONE)
         px.load("assets.pyxres")
         self.bdf = BDFRenderer("misaki_gothic.bdf")
@@ -185,7 +187,7 @@ class App:
         list_language = ("Japanese", "English")
         for i, elm in enumerate(list_tab):
             self.set_tab(i, i * 64 + 4, 20, elm)
-        for i in range(4):
+        for i in range(4 if LOCAL else 5):
             self.set_icon(i, 4 + i * 20, 4)
         for i, elm in enumerate(list_language):
             self.set_btn(None, "language", i, 116 + 48 * i, 6, 48, elm)
@@ -273,19 +275,32 @@ class App:
                         self.play()
                 elif icon.id == 3:
                     if LOCAL:
-                        with open(os.path.abspath(self.output_file), "wt") as fout:
+                        current_file_path = os.path.abspath(sys.argv[0])
+                        current_dir_path = os.path.dirname(current_file_path)
+                        project_root_path = os.path.dirname(current_dir_path)
+                        output_json_path = os.path.join(project_root_path, "export")
+                        with open(
+                            f"{output_json_path}/{self.output_json}", "wt"
+                        ) as fout:
                             fout.write(json.dumps(self.music))
+                        sounds.make_midi(
+                            self.items, f"{output_json_path}/{self.output_midi}"
+                        )
                     else:
                         blob = Blob.new(self.music, {"type": "text/plain"})
                         blob_url = URL.createObjectURL(blob)
                         a = document.createElement("a")
                         a.href = blob_url
-                        a.download = self.output_file
+                        a.download = self.output_json
                         document.body.appendChild(a)
                         a.click()
                         document.body.removeChild(a)
                         URL.revokeObjectURL(blob_url)
                     self.show_export = True
+                elif icon.id == 4:
+                    window.open(
+                        "https://github.com/shiromofufactory/8bit-bgm-generator#readme"
+                    )
         for button in self.buttons:
             if button.visible(self) and button.mouse_in():
                 prev_value = self.parm[button.type]
@@ -316,7 +331,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.10", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.20", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
@@ -484,10 +499,10 @@ class App:
             ("", ""),
             ("【ローカルでうごかしているばあい】", "[When running in a local environment]"),
             (
-                "　プログラムのフォルダの music.json にほぞんしました。",
-                "  Saved in 'music.json' in the program folder.",
+                "　exportフォルダに music.json と music.mid を",
+                "  'music.json' and 'music.mid' in the export folder.",
             ),
-            ("", ""),
+            ("　ほぞんしました。", ""),
             ("【ブラウザでうごかしているばあい】", "[When running in a browser]"),
             (
                 "　music.json がダウンロードされます。",
@@ -536,11 +551,11 @@ class App:
                     item[12] = 4
                     item[13] = 15
                     if self.with_drum:
-                        item[15] = 0
+                        item[15] = 15
                         item[16] = 5
                         item[17] = 15
                 elif self.with_drum:
-                    item[11] = 0
+                    item[11] = 15
                     item[12] = 5
                     item[13] = 15
                 else:  # リバーブ
@@ -574,7 +589,7 @@ class App:
                         adjust = adjust_list[adjust_idx]
                         base_note = base_root + base_add + adjust
                         tmp = (base_note + parm["transpose"]) % 12
-                        print(notes, tmp, notes[tmp])
+                        # print(notes, tmp, notes[tmp])
                         if notes[(base_note + parm["transpose"]) % 12] in [1, 2, 3]:
                             break
                         adjust_idx += 1
@@ -597,8 +612,8 @@ class App:
                 break
             failure_cnt += 1
             self.set_chord_lists()
-            print("--------失敗---------")
-        print("失敗回数", failure_cnt)
+            # print("--------失敗---------")
+        # print("失敗回数", failure_cnt)
         # メロディ・サブとリバーブの音符を設定
         for loc in range(self.total_len):
             item = items[loc]
@@ -670,7 +685,7 @@ class App:
         self.melody_notes = [-2 for _ in range(self.total_len)]
         self.submelody_notes = [-2 for _ in range(self.total_len)]
         # メインメロディ
-        print("=== MAIN START ===")
+        # print("=== MAIN START ===")
         rhythm_main_list = []
         for _ in range(5):
             rhythm_main_list.append(self.get_rhythm_set())
@@ -696,7 +711,7 @@ class App:
                     notesets_len += noteset[2]
                 self.put_submelody(loc, -2, notesets_len)
         # サブメロディ
-        print("=== SUB START ===")
+        # print("=== SUB START ===")
         rhythm_sub = self.get_rhythm_set(True)
         prev_note_loc = -1
         for loc in range(self.total_len):
@@ -776,7 +791,7 @@ class App:
             (next_chord_idx, next_chord_loc) = self.get_chord(loc + note_len)
             change_code = True
             premonitory = True
-            print(loc, note_len, "先取音発生")
+            # print(loc, note_len, "先取音発生")
         if change_code:
             self.chord_list = self.chord_lists[next_chord_idx]
             self.cur_chord_idx = next_chord_idx
@@ -785,10 +800,10 @@ class App:
             self.is_repeat = not self.chord_list["repeat"] is None
         # 小節単位の繰り返し
         if self.is_repeat:
-            print(loc, "repeat")
+            # print(loc, "repeat")
             return [] if premonitory else None
         if pat == -1:  # 休符
-            print(loc, "休符")
+            # print(loc, "休符")
             return [(loc, -1, note_len)]
         # 初期処理
         self.chord_notes = self.chord_list["notes"]
@@ -814,7 +829,7 @@ class App:
                     break
         # 初音（直前が休符 or コード構成音から外れた場合は、コード構成音を取得）
         if self.prev_note < 0 or cur_idx is None:
-            print(loc, "初音")
+            # print(loc, "初音")
             note = self.chord_notes[next_idx][0]
             return [(loc, note, note_len)]
         # 各種変数準備
@@ -825,12 +840,12 @@ class App:
         if diff == 0:
             cnt = len(following) // 2
             if cnt and px.rndi(0, 1) and not is_sub:
-                print(loc, "刺繍音", cnt * 2)
+                # print(loc, "刺繍音", cnt * 2)
                 for i in range(cnt):
                     while next_idx == cur_idx:
                         next_idx = self.get_target_note()
                     direction = 1 if next_idx > cur_idx else -1
-                    print(cur_idx, next_idx, self.chord_notes)
+                    # print(cur_idx, next_idx, self.chord_notes)
                     note = self.chord_notes[cur_idx + direction][0]
                     prev_note = self.prev_note
                     note_follow = following[i * 2]
@@ -839,15 +854,15 @@ class App:
                     results.append((note_follow[0], prev_note, note_follow[1]))
                 return results
             else:
-                print(loc, "同音")
+                # print(loc, "同音")
                 return [(loc, self.prev_note, note_len)]
         # ステップに必要な長さが足りない/跳躍量が大きい/割合で跳躍音採用
         if abs(next_idx - cur_idx) > len(following):
             note = self.chord_notes[next_idx][0]
-            print(loc, "跳躍")
+            # print(loc, "跳躍")
             return [(loc, note, note_len)]
         # ステップ
-        print(loc, "ステップ", abs(next_idx - cur_idx))
+        # print(loc, "ステップ", abs(next_idx - cur_idx))
         i = 0
         while next_idx != cur_idx:
             cur_idx += direction
