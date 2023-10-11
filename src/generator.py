@@ -1,8 +1,7 @@
 import pyxel as px
-import os
-import sys
 import json
 import sounds
+import os
 from bdf import BDFRenderer
 
 SUBMELODY_DIFF = 0
@@ -158,6 +157,11 @@ class Button(Element):
 # アプリ
 class App:
     def __init__(self):
+        output_path = os.path.abspath(".")
+        if output_path.endswith("src"):
+            self.output_path = output_path + "/../export"
+        else:
+            self.output_path = output_path + "/export"
         self.output_json = "music.json"
         self.output_midi = "music.mid"
         px.init(256, 256, title="8bit BGM generator", quit_key=px.KEY_NONE)
@@ -275,16 +279,12 @@ class App:
                         self.play()
                 elif icon.id == 3:
                     if LOCAL:
-                        current_file_path = os.path.abspath(sys.argv[0])
-                        current_dir_path = os.path.dirname(current_file_path)
-                        project_root_path = os.path.dirname(current_dir_path)
-                        output_json_path = os.path.join(project_root_path, "export")
                         with open(
-                            f"{output_json_path}/{self.output_json}", "wt"
+                            f"{self.output_path}/{self.output_json}", "wt"
                         ) as fout:
                             fout.write(json.dumps(self.music))
                         sounds.make_midi(
-                            self.items, f"{output_json_path}/{self.output_midi}"
+                            self.items, f"{self.output_path}/{self.output_midi}"
                         )
                     else:
                         blob = Blob.new(self.music, {"type": "text/plain"})
