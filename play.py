@@ -1,7 +1,7 @@
 import pyxel
 import json
 
-MUSIC_FILE = "music"
+MUSIC_FILE = "export/music"
 
 
 class App:
