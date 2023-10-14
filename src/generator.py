@@ -164,6 +164,7 @@ class App:
             self.output_path = output_path + "/export"
         self.output_json = "music.json"
         self.output_midi = "music.mid"
+        self.failed_export_midi = False
         px.init(256, 256, title="8bit BGM generator", quit_key=px.KEY_NONE)
         px.load("assets.pyxres")
         self.bdf = BDFRenderer("misaki_gothic.bdf")
@@ -283,9 +284,13 @@ class App:
                             f"{self.output_path}/{self.output_json}", "wt"
                         ) as fout:
                             fout.write(json.dumps(self.music))
-                        sounds.make_midi(
-                            self.items, f"{self.output_path}/{self.output_midi}"
-                        )
+                        try:
+                            sounds.make_midi(
+                                self.items, f"{self.output_path}/{self.output_midi}"
+                            )
+                        except:
+                            self.failed_export_midi = True
+                            print("MIDIファイルを出力できませんでした。midoをインストールしてください。")
                     else:
                         blob = Blob.new(self.music, {"type": "text/plain"})
                         blob_url = URL.createObjectURL(blob)
@@ -331,7 +336,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.20", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.21", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
@@ -377,8 +382,12 @@ class App:
             px.rect(20, y + 4, 224, h, COL_SHADOW)
             px.rect(16, y, 224, h, COL_BTN_SELECTED)
             px.rectb(16, y, 224, h, COL_BTN_BASIC)
+            if self.failed_export_midi:
+                list_mes = (22, 25, 26, 27, 28)
+            else:
+                list_mes = (22, 23, 24, 27, 28)
             for i in range(5):
-                self.text(20, y + 4 + 12 * i, 24 + i, COL_TEXT_BASIC)
+                self.text(20, y + 4 + 12 * i, list_mes[i], COL_TEXT_BASIC)
         # 鍵盤
         sx = 8
         sy = 234
@@ -495,14 +504,17 @@ class App:
             ("おんぷのかず", "Number of notes"),
             ("１６ぶおんぷをつかう？", "Use 16th notes?"),
             ("", ""),
-            ("", ""),
-            ("", ""),
             ("【ローカルでうごかしているばあい】", "[When running in a local environment]"),
             (
                 "　exportフォルダに music.json と music.mid を",
                 "  'music.json' and 'music.mid' in the export folder.",
             ),
             ("　ほぞんしました。", ""),
+            (
+                "　exportフォルダに music.jsonをほぞんしました。",
+                "  'music.json' in the export folder.",
+            ),
+            ("", ""),
             ("【ブラウザでうごかしているばあい】", "[When running in a browser]"),
             (
                 "　music.json がダウンロードされます。",
