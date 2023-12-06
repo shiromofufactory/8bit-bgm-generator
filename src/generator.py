@@ -456,7 +456,7 @@ class App:
 
     def play(self):
         for ch, sound in enumerate(self.music):
-            px.sound(ch).set(*sound)
+            px.sounds[ch].set(*sound)
             px.play(ch, ch, loop=self.loop)
 
     def set_preset(self, value):
