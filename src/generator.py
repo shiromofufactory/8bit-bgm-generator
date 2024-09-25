@@ -1,3 +1,9 @@
+# title: 8bit BGM generator
+# author: frenchbread
+# desc: A Pyxel music auto-generation tool
+# site: https://github.com/shiromofufactory/8bit-bgm-generator
+# license: MIT
+# version: 1.21
 import pyxel as px
 import json
 import sounds
@@ -290,7 +296,9 @@ class App:
                             )
                         except:
                             self.failed_export_midi = True
-                            print("MIDIファイルを出力できませんでした。midoをインストールしてください。")
+                            print(
+                                "MIDIファイルを出力できませんでした。midoをインストールしてください。"
+                            )
                     else:
                         blob = Blob.new(self.music, {"type": "text/plain"})
                         blob_url = URL.createObjectURL(blob)
@@ -485,7 +493,10 @@ class App:
                 "とうろくしてあります。　はじめてのかたは",
                 "'Melody' are registered. If you are a first time user,",
             ),
-            ("プリセットをもとに　きょくをつくってみましょう。", "create a song based on the presets."),
+            (
+                "プリセットをもとに　きょくをつくってみましょう。",
+                "create a song based on the presets.",
+            ),
             ("トランスポーズ", "Transpose"),
             ("へんせい", "Instrumentation"),
             ("テンポ", "Tempo"),
@@ -493,7 +504,10 @@ class App:
             ("ベース　パターン", "Bass Patterns"),
             ("ベース　クオンタイズ", "Base Quantize"),
             ("ドラム　パターン", "Drums Patterns"),
-            ("「No drums」をせんたくすると　ドラムパートのかわりに", "When 'No drums' is selected, "),
+            (
+                "「No drums」をせんたくすると　ドラムパートのかわりに",
+                "When 'No drums' is selected, ",
+            ),
             (
                 "メロディにリバーブがかかります。",
                 "reverb is applied to the melody instead of the drum part.",
@@ -504,7 +518,10 @@ class App:
             ("おんぷのかず", "Number of notes"),
             ("１６ぶおんぷをつかう？", "Use 16th notes?"),
             ("", ""),
-            ("【ローカルでうごかしているばあい】", "[When running in a local environment]"),
+            (
+                "【ローカルでうごかしているばあい】",
+                "[When running in a local environment]",
+            ),
             (
                 "　exportフォルダに music.json と music.mid を",
                 "  'music.json' and 'music.mid' in the export folder.",
@@ -520,8 +537,14 @@ class App:
                 "　music.json がダウンロードされます。",
                 " 'music.json' will be downloaded.",
             ),
-            ("フルへんせいのばあいは４チャンネル、", "Use 4 channels for full instrumentation,"),
-            ("それいがいは３チャンネルをつかいます。", "3 channels for everything else."),
+            (
+                "フルへんせいのばあいは４チャンネル、",
+                "Use 4 channels for full instrumentation,",
+            ),
+            (
+                "それいがいは３チャンネルをつかいます。",
+                "3 channels for everything else.",
+            ),
         ]
         lang = self.parm["language"]
         text = list_text[value][lang]
