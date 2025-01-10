@@ -300,7 +300,7 @@ class App:
                                 "MIDIファイルを出力できませんでした。midoをインストールしてください。"
                             )
                     else:
-                        blob = Blob.new(self.music, {"type": "text/plain"})
+                        blob = Blob.new([self.music], {"type": "text/plain"})
                         blob_url = URL.createObjectURL(blob)
                         a = document.createElement("a")
                         a.href = blob_url
