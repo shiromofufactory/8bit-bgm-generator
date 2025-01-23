@@ -3,7 +3,7 @@
 # desc: A Pyxel music auto-generation tool
 # site: https://github.com/shiromofufactory/8bit-bgm-generator
 # license: MIT
-# version: 1.21
+# version: 1.22
 import pyxel as px
 import json
 import sounds
@@ -300,7 +300,9 @@ class App:
                                 "MIDIファイルを出力できませんでした。midoをインストールしてください。"
                             )
                     else:
-                        blob = Blob.new([json.dumps(self.music)], {"type": "text/plain"})
+                        blob = Blob.new(
+                            [json.dumps(self.music)], {"type": "text/plain"}
+                        )
                         blob_url = URL.createObjectURL(blob)
                         a = document.createElement("a")
                         a.href = blob_url
@@ -344,7 +346,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.21", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.22", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
