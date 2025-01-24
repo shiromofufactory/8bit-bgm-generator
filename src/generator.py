@@ -489,7 +489,7 @@ class App:
             ("プリセット", "Preset"),
             (
                 "「コードとリズム」「メロディ」の　オススメせっていを",
-                "The recommended settings for 'Chord and Rhyth' and",
+                "The recommended settings for 'Chord and Rhythm' and",
             ),
             (
                 "とうろくしてあります。　はじめてのかたは",
