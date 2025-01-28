@@ -3,7 +3,7 @@
 # desc: A Pyxel music auto-generation tool
 # site: https://github.com/shiromofufactory/8bit-bgm-generator
 # license: MIT
-# version: 1.22
+# version: 1.30
 import pyxel as px
 import json
 import sounds
@@ -15,7 +15,7 @@ SUB_RHYTHM = [0, None, 0, None, 0, None, 0, None, 0, None, 0, None, 0, None, 0, 
 
 LOCAL = False
 try:
-    from js import Blob, URL, document, window
+    from js import Blob, URL, document, window, _savePyxelFile
 except:
     LOCAL = True
 
@@ -169,6 +169,7 @@ class App:
         else:
             self.output_path = output_path + "/export"
         self.output_json = "music.json"
+        self.output_wav = "music.wav"
         self.output_midi = "music.mid"
         self.failed_export_midi = False
         px.init(256, 256, title="8bit BGM generator", quit_key=px.KEY_NONE)
@@ -240,6 +241,7 @@ class App:
         self.play()
         self.saved_playkey = [-1, -1, -1]
         self.show_export = None
+        self.downloading = False
         self.tab = 0
         px.mouse(True)
         px.run(self.update, self.draw)
@@ -285,11 +287,13 @@ class App:
                     if px.play_pos(0):
                         self.play()
                 elif icon.id == 3:
+                    px.musics[0].set([0], [1], [2], [3])
                     if LOCAL:
                         with open(
                             f"{self.output_path}/{self.output_json}", "wt"
                         ) as fout:
                             fout.write(json.dumps(self.music))
+                        px.musics[0].save(f"{self.output_path}/{self.output_wav}", 1)
                         try:
                             sounds.make_midi(
                                 self.items, f"{self.output_path}/{self.output_midi}"
@@ -300,17 +304,22 @@ class App:
                                 "MIDIファイルを出力できませんでした。midoをインストールしてください。"
                             )
                     else:
-                        blob = Blob.new(
-                            [json.dumps(self.music)], {"type": "text/plain"}
-                        )
-                        blob_url = URL.createObjectURL(blob)
-                        a = document.createElement("a")
-                        a.href = blob_url
-                        a.download = self.output_json
-                        document.body.appendChild(a)
-                        a.click()
-                        document.body.removeChild(a)
-                        URL.revokeObjectURL(blob_url)
+                        if not self.downloading:
+                            self.downloading = True
+                            blob = Blob.new(
+                                [json.dumps(self.music)], {"type": "text/plain"}
+                            )
+                            blob_url = URL.createObjectURL(blob)
+                            a = document.createElement("a")
+                            a.href = blob_url
+                            a.download = self.output_json
+                            document.body.appendChild(a)
+                            a.click()
+                            document.body.removeChild(a)
+                            URL.revokeObjectURL(blob_url)
+                            px.musics[0].save(self.output_wav, 1)
+                            _savePyxelFile(self.output_wav)
+                            self.downloading = False
                     self.show_export = True
                 elif icon.id == 4:
                     window.open(
@@ -346,7 +355,7 @@ class App:
     def draw(self):
         px.cls(COL_BACK_SECONDARY)
         px.rect(4, 32, 248, 184, COL_BACK_PRIMARY)
-        px.text(220, 8, "ver 1.22", COL_TEXT_MUTED)
+        px.text(220, 8, "ver 1.30", COL_TEXT_MUTED)
         if self.tab == 0:
             self.text(8, 40, 3, COL_TEXT_BASIC)
             px.rectb(8, 64, 240, 32, COL_TEXT_MUTED)
@@ -525,19 +534,19 @@ class App:
                 "[When running in a local environment]",
             ),
             (
-                "　exportフォルダに music.json と music.mid を",
-                "  'music.json' and 'music.mid' in the export folder.",
+                "　exportフォルダに music.json/wav/mid を",
+                "  'music.json/wav/mid' in the export folder.",
             ),
             ("　ほぞんしました。", ""),
             (
-                "　exportフォルダに music.jsonをほぞんしました。",
-                "  'music.json' in the export folder.",
+                "　exportフォルダに music.json/wav をほぞんしました。",
+                "  'music.json/wav' in the export folder.",
             ),
             ("", ""),
             ("【ブラウザでうごかしているばあい】", "[When running in a browser]"),
             (
-                "　music.json がダウンロードされます。",
-                " 'music.json' will be downloaded.",
+                "　music.json/wav がダウンロードされます。",
+                " 'music.json/wav' will be downloaded.",
             ),
             (
                 "フルへんせいのばあいは４チャンネル、",

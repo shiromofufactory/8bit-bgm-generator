@@ -2,8 +2,7 @@ __pycache__
 .git
 dev
 public
-export/music.json
-export/music.mid
+export/*
 *.sh
 firebase.json
 .firebaserc
